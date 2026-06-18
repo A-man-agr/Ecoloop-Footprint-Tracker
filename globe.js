@@ -20,6 +20,9 @@ export const EcoGlobe = {
     targetRotationX: 0,
     targetRotationY: 0,
 
+    /**
+     * Initializes the Three.js 3D scene, cameras, renderers, particle systems, and event listeners.
+     */
     init() {
         const container = document.getElementById("globe-3d-container");
         const canvas = document.getElementById("canvas-3d-globe");
@@ -135,6 +138,9 @@ export const EcoGlobe = {
         }
     },
 
+    /**
+     * Resizes the rendering canvas based on its container size and screen resolution.
+     */
     resize() {
         const container = document.getElementById("globe-3d-container");
         if (!this.renderer || !container) return;
@@ -152,6 +158,10 @@ export const EcoGlobe = {
         this.camera.updateProjectionMatrix();
     },
 
+    /**
+     * Updates the color gradient of the 3D globe based on the net carbon footprint tons value.
+     * @param {number} netTons Net carbon footprint in Tons
+     */
     updateColor(netTons) {
         if (!this.wireframe || !this.points) return;
         
@@ -166,6 +176,10 @@ export const EcoGlobe = {
         this.points.material.color.setHex(activeColor);
     },
 
+    /**
+     * Attaches mouse, touch, and keyboard accessibility listeners for interactive rotation.
+     * @param {HTMLElement} container Wrapper container for the 3D canvas
+     */
     setupInteractions(container) {
         const handleStart = (clientX, clientY) => {
             this.isInteracting = true;
@@ -221,12 +235,18 @@ export const EcoGlobe = {
         });
     },
 
+    /**
+     * Resumes the animation rendering requestAnimationFrame loop if stopped.
+     */
     start() {
         if (!this.animationFrameId && this.renderer) {
             this.animate();
         }
     },
 
+    /**
+     * Stops the animation rendering requestAnimationFrame loop to save GPU cycles.
+     */
     stop() {
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
@@ -234,6 +254,9 @@ export const EcoGlobe = {
         }
     },
 
+    /**
+     * The core rendering and animation math arcing calculations loop.
+     */
     animate() {
         this.animationFrameId = requestAnimationFrame(() => this.animate());
 
