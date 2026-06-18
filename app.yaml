@@ -1,0 +1,12 @@
+runtime: python39
+
+handlers:
+# Serve static styles and js
+- url: /(.*\.(css|js|png|jpg|jpeg|gif|ico|svg))$
+  static_files: \1
+  upload: (.*\.(css|js|png|jpg|jpeg|gif|ico|svg))$
+
+# Serve index.html
+- url: /.*
+  static_files: index.html
+  upload: index.html

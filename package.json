@@ -1,0 +1,17 @@
+{
+  "name": "ecoloop-footprint-tracker",
+  "version": "1.0.0",
+  "description": "EcoLoop Carbon Footprint Tracker and Sorter Game",
+  "type": "module",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "carbon",
+    "tracker",
+    "pwa",
+    "testing"
+  ],
+  "author": "Aman",
+  "license": "MIT"
+}
