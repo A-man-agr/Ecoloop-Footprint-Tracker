@@ -7,7 +7,7 @@
     <meta name="description" content="An interactive carbon footprint calculator, tracker, and sorting game designed to help you understand and reduce your daily environmental impact.">
     
     <!-- Content Security Policy (CSP) for Enhanced Security -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://maps.googleapis.com https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://*.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://generativelanguage.googleapis.com https://www.googletagmanager.com https://*.google-analytics.com https://maps.googleapis.com https://cdn.jsdelivr.net https://*.firebaseio.com wss://*.firebaseio.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://maps.googleapis.com https://www.gstatic.com; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://*.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://generativelanguage.googleapis.com https://www.googletagmanager.com https://*.google-analytics.com https://maps.googleapis.com https://cdn.jsdelivr.net https://*.firebaseio.com wss://*.firebaseio.com;">
 
     <!-- Preconnect / DNS Prefetch to Optimize Page Load Performance (100% Speed Score) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -159,7 +159,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <hr class="card-divider" aria-hidden="true" style="margin: 1rem 0 0.5rem 0;">
+                            <hr class="card-divider-small" aria-hidden="true">
                             <!-- Daily Carbon Budget Tracker (Alignment & Progress) -->
                             <div class="daily-budget-container" aria-label="Daily carbon budget progress">
                                 <div class="budget-header-row">
@@ -167,7 +167,7 @@
                                     <span class="budget-percentage" id="budget-percentage-text">0% Used</span>
                                 </div>
                                 <div class="budget-progress-bar">
-                                    <div class="budget-progress-fill" id="budget-progress-fill" style="width: 0%;"></div>
+                                    <div class="budget-progress-fill" id="budget-progress-fill"></div>
                                 </div>
                                 <div class="budget-footer-row text-secondary">
                                     <span>Target Limit: <strong class="text-emerald">11.0 kg/day</strong> (Paris Agreement Goal)</span>
@@ -188,7 +188,7 @@
                                 </div>
                                 <h4 id="rank-title">Eco Explorer</h4>
                                 <div class="xp-bar-container" aria-label="XP progress towards next rank">
-                                    <div class="xp-bar-fill" id="xp-bar-fill" style="width: 0%;"></div>
+                                    <div class="xp-bar-fill" id="xp-bar-fill"></div>
                                 </div>
                                 <div class="xp-labels" aria-live="polite">
                                     <span id="xp-current">0 XP</span>
@@ -247,7 +247,7 @@
                                             <option value="0.50">50% Reduction</option>
                                         </select>
                                     </div>
-                                    <input type="file" id="input-import-file" accept=".json" style="display: none;" aria-hidden="true">
+                                    <input type="file" id="input-import-file" accept=".json" aria-hidden="true">
                                     <button class="btn btn-secondary btn-small" id="btn-trigger-import" aria-label="Import carbon data from JSON">
                                         <i class="fa-solid fa-upload" aria-hidden="true"></i> Import History
                                     </button>
@@ -375,7 +375,7 @@
                                 </button>
                             </div>
                             <div class="wizard-progress-bar" aria-label="Form completion progress bar">
-                                <div class="wizard-progress-fill" id="wizard-progress-fill" style="width: 25%;"></div>
+                                <div class="wizard-progress-fill" id="wizard-progress-fill"></div>
                             </div>
                         </div>
 
@@ -481,12 +481,29 @@
                                         <span class="input-subtitle">Flight time accounts for both short and long haul averages.</span>
                                     </div>
 
+                                    <div class="form-group select-inline-group">
+                                        <label for="input-flight-class">Average Flight Class Cabin</label>
+                                        <select id="input-flight-class" class="form-control">
+                                            <option value="economy" selected>Economy Class</option>
+                                            <option value="business">Business Class</option>
+                                            <option value="first">First Class</option>
+                                        </select>
+                                    </div>
+
                                     <div class="form-group">
                                         <div class="label-with-val">
                                             <label for="input-transit">Weekly Public Transit Use (Bus/Train/Subway)</label>
                                             <span class="slider-value" id="val-transit">20 miles</span>
                                         </div>
                                         <input type="range" class="slider" id="input-transit" min="0" max="300" step="5" value="20" aria-valuemin="0" aria-valuemax="300" aria-valuenow="20">
+                                    </div>
+
+                                    <div class="form-group select-inline-group">
+                                        <label for="input-transit-type">Primary Transit Mode Type</label>
+                                        <select id="input-transit-type" class="form-control">
+                                            <option value="bus" selected>Bus / Shuttle</option>
+                                            <option value="train">Train / Metro</option>
+                                        </select>
                                     </div>
                                 </div>
 

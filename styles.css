@@ -419,6 +419,13 @@ body {
     margin: 1.25rem 0;
 }
 
+.card-divider-small {
+    border: 0;
+    height: 1px;
+    background: var(--card-border);
+    margin: 1rem 0 0.5rem 0;
+}
+
 /* Typography Utilities */
 .text-secondary { color: var(--text-secondary); }
 .text-emerald { color: var(--primary); }
@@ -673,6 +680,7 @@ body {
 
 .xp-bar-fill {
     height: 100%;
+    width: 0%;
     background: linear-gradient(to right, var(--primary), var(--secondary));
     border-radius: 4px;
     transition: width 0.8s ease-in-out;
@@ -962,6 +970,7 @@ body {
 
 .wizard-progress-fill {
     height: 100%;
+    width: 25%;
     background-color: var(--primary);
     border-radius: 2px;
     transition: width 0.4s ease;
@@ -2147,6 +2156,7 @@ body {
     width: 100%;
     height: 100%;
     display: block;
+    background-color: #0b1116;
 }
 
 .map-marker {
@@ -2205,6 +2215,7 @@ body {
 
 .budget-progress-fill {
     height: 100%;
+    width: 0%;
     background: linear-gradient(90deg, var(--primary), var(--secondary));
     border-radius: 4px;
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2226,6 +2237,10 @@ body {
         transition-duration: 0s !important;
         scroll-behavior: auto !important;
     }
+}
+
+#input-import-file {
+    display: none;
 }
 
 

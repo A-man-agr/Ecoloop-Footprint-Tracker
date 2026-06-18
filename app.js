@@ -49,7 +49,9 @@ const DEFAULT_STATE = {
         carMiles: 150,
         carType: 'gas',
         flights: 10,
+        flightClass: 'economy',
         transit: 20,
+        transitType: 'bus',
         dietType: 'average',
         foodWaste: 15,
         groceryBeef: 2,
@@ -352,7 +354,9 @@ function loadStateFromStorage() {
                     state.calculatorData.carMiles = Math.max(0, Math.min(1000, parseFloat(pd.carMiles) || 150));
                     state.calculatorData.carType = ['gas', 'hybrid', 'electric'].includes(pd.carType) ? pd.carType : 'gas';
                     state.calculatorData.flights = Math.max(0, Math.min(100, parseFloat(pd.flights) || 10));
+                    state.calculatorData.flightClass = ['economy', 'business', 'first'].includes(pd.flightClass) ? pd.flightClass : 'economy';
                     state.calculatorData.transit = Math.max(0, Math.min(300, parseFloat(pd.transit) || 20));
+                    state.calculatorData.transitType = ['bus', 'train'].includes(pd.transitType) ? pd.transitType : 'bus';
                     state.calculatorData.dietType = ['meat-heavy', 'average', 'vegetarian', 'vegan'].includes(pd.dietType) ? pd.dietType : 'average';
                     state.calculatorData.foodWaste = Math.max(0, Math.min(50, parseFloat(pd.foodWaste) || 15));
                     
@@ -885,7 +889,7 @@ function initAccessibilitySystem() {
                 renderLeaderboard();
                 
                 alert("🔄 Application state has been reset to defaults.");
-                announceToScreenReader("Application state has been reset to defaults.");
+                location.reload();
             }
         });
     }
@@ -1020,6 +1024,25 @@ function initCalculatorWizard() {
         recycleInput.checked = state.calculatorData.recycle;
         recycleInput.addEventListener("change", () => {
             state.calculatorData.recycle = recycleInput.checked;
+            debouncedUpdateCarbon();
+        });
+    }
+
+    // Expanded Travel Configuration bindings
+    const flightClassSelect = document.getElementById("input-flight-class");
+    if (flightClassSelect) {
+        flightClassSelect.value = state.calculatorData.flightClass || "economy";
+        flightClassSelect.addEventListener("change", () => {
+            state.calculatorData.flightClass = flightClassSelect.value;
+            debouncedUpdateCarbon();
+        });
+    }
+
+    const transitTypeSelect = document.getElementById("input-transit-type");
+    if (transitTypeSelect) {
+        transitTypeSelect.value = state.calculatorData.transitType || "bus";
+        transitTypeSelect.addEventListener("change", () => {
+            state.calculatorData.transitType = transitTypeSelect.value;
             debouncedUpdateCarbon();
         });
     }
@@ -1715,6 +1738,29 @@ async function runUnitTests() {
         logTest("Defensive Parameter Parsing & Type Resilience", false, e.message);
     }
 
+    // Assert 18: Flight class emission scaling (economy vs business vs first class)
+    try {
+        const ecoResult = calculateBaselineEmissions({ flights: 10, flightClass: 'economy' }).transport;
+        const bizResult = calculateBaselineEmissions({ flights: 10, flightClass: 'business' }).transport;
+        const firstResult = calculateBaselineEmissions({ flights: 10, flightClass: 'first' }).transport;
+        
+        const scaleCorrect = bizResult > ecoResult && firstResult > bizResult;
+        logTest("Flight class emissions scaling hierarchy", scaleCorrect, `Eco: ${ecoResult}kg, Biz: ${bizResult}kg, First: ${firstResult}kg`);
+    } catch(e) {
+        logTest("Flight class emissions scaling hierarchy", false, e.message);
+    }
+
+    // Assert 19: Transit type emission scaling (bus vs train)
+    try {
+        const busResult = calculateBaselineEmissions({ transit: 100, transitType: 'bus' }).transport;
+        const trainResult = calculateBaselineEmissions({ transit: 100, transitType: 'train' }).transport;
+        
+        const scaleCorrect = busResult > trainResult;
+        logTest("Transit type emissions scaling hierarchy", scaleCorrect, `Bus: ${busResult}kg, Train: ${trainResult}kg`);
+    } catch(e) {
+        logTest("Transit type emissions scaling hierarchy", false, e.message);
+    }
+
     // Update summaries inside modal DOM
     if (totalEl) totalEl.textContent = passes + fails;
     if (passEl) passEl.textContent = passes;
@@ -1961,7 +2007,7 @@ function renderGoogleMap(container) {
  */
 function renderSVGFallbackMap(container) {
     container.innerHTML = `
-        <svg class="fallback-svg-map" viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg" style="background-color: #0b1116;">
+        <svg class="fallback-svg-map" viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
             <!-- Grid lines for clean technical aesthetics -->
             <defs>
                 <pattern id="map-grid" width="15" height="15" patternUnits="userSpaceOnUse">

@@ -14,7 +14,12 @@ export const CALC_FACTORS = Object.freeze({
     carHybridCo2PerMile: 0.18 * 52,  // 0.18 kg/mile, 52 weeks
     carElectricCo2PerMile: 0.08 * 52,// 0.08 kg/mile, 52 weeks
     flightCo2PerHour: 120,           // 120 kg/hour average
+    flightEconomyCo2PerHour: 100,
+    flightBusinessCo2PerHour: 180,
+    flightFirstCo2PerHour: 250,
     transitCo2PerMile: 0.10 * 52,    // 0.10 kg/mile public transit, 52 weeks
+    transitBusCo2PerMile: 0.10 * 52,
+    transitTrainCo2PerMile: 0.04 * 52,
     
     dietMeatHeavyCo2: 7.2 * 365,     // 7.2 kg/day
     dietAverageCo2: 5.2 * 365,       // 5.2 kg/day
@@ -115,8 +120,20 @@ export function calculateBaselineEmissions(d) {
     const transit = safeFloat(d.transit, 0);
 
     const carCo2 = carMiles * carFactor;
-    const flightCo2 = flights * CALC_FACTORS.flightCo2PerHour;
-    const transitCo2 = transit * CALC_FACTORS.transitCo2PerMile;
+
+    // Flight class-based factor selection
+    let flightFactor = CALC_FACTORS.flightCo2PerHour;
+    if (d.flightClass === 'economy') flightFactor = CALC_FACTORS.flightEconomyCo2PerHour;
+    else if (d.flightClass === 'business') flightFactor = CALC_FACTORS.flightBusinessCo2PerHour;
+    else if (d.flightClass === 'first') flightFactor = CALC_FACTORS.flightFirstCo2PerHour;
+    const flightCo2 = flights * flightFactor;
+
+    // Transit type-based factor selection
+    let transitFactor = CALC_FACTORS.transitCo2PerMile;
+    if (d.transitType === 'bus') transitFactor = CALC_FACTORS.transitBusCo2PerMile;
+    else if (d.transitType === 'train') transitFactor = CALC_FACTORS.transitTrainCo2PerMile;
+    const transitCo2 = transit * transitFactor;
+
     const transportTotal = carCo2 + flightCo2 + transitCo2;
 
     // 3. Diet & Grocery Planner (kg CO2 / year)

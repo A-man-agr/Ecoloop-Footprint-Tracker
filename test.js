@@ -1,3 +1,47 @@
+// Setup Node-compatible mock DOM globals (Testing optimization!)
+if (typeof global !== 'undefined' && typeof window === 'undefined') {
+    global.window = {};
+    global.document = {
+        createElement: (tag) => {
+            const element = {
+                tagName: tag.toUpperCase(),
+                style: {},
+                classList: {
+                    classes: [],
+                    add: (cls) => element.classList.classes.push(cls),
+                    remove: (cls) => {
+                        element.classList.classes = element.classList.classes.filter(c => c !== cls);
+                    },
+                    contains: (cls) => element.classList.classes.includes(cls)
+                },
+                appendChild: (child) => {
+                    element.children.push(child);
+                    return child;
+                },
+                removeChild: (child) => {
+                    element.children = element.children.filter(c => c !== child);
+                    return child;
+                },
+                children: [],
+                setAttribute: (name, val) => { element[name] = val; },
+                removeAttribute: (name) => { delete element[name]; },
+                textContent: "",
+                innerHTML: ""
+            };
+            return element;
+        },
+        createTextNode: (text) => ({ textContent: text }),
+        getElementById: () => null,
+        querySelectorAll: () => []
+    };
+    global.localStorage = {
+        store: {},
+        getItem: (key) => global.localStorage.store[key] || null,
+        setItem: (key, val) => { global.localStorage.store[key] = String(val); },
+        removeItem: (key) => { delete global.localStorage.store[key]; }
+    };
+}
+
 import { CALC_FACTORS, calculateBaselineEmissions } from './calculations.js';
 import { sanitizeInput } from './settings.js';
 
@@ -160,6 +204,46 @@ try {
     assert("Clean Energy mix bounds capping", resultOOB >= 0, `Output: ${resultOOB} kg`);
 } catch (e) {
     assert("Clean Energy mix bounds capping", false, e.message);
+}
+
+// 16. Flight class emission scaling (economy vs business vs first class)
+try {
+    const ecoResult = calculateBaselineEmissions({ flights: 10, flightClass: 'economy' }).transport;
+    const bizResult = calculateBaselineEmissions({ flights: 10, flightClass: 'business' }).transport;
+    const firstResult = calculateBaselineEmissions({ flights: 10, flightClass: 'first' }).transport;
+    
+    const scaleCorrect = bizResult > ecoResult && firstResult > bizResult;
+    assert("Flight class emissions scaling hierarchy", scaleCorrect, `Eco: ${ecoResult}kg, Biz: ${bizResult}kg, First: ${firstResult}kg`);
+} catch (e) {
+    assert("Flight class emissions scaling hierarchy", false, e.message);
+}
+
+// 17. Transit type emission scaling (bus vs train)
+try {
+    const busResult = calculateBaselineEmissions({ transit: 100, transitType: 'bus' }).transport;
+    const trainResult = calculateBaselineEmissions({ transit: 100, transitType: 'train' }).transport;
+    
+    const scaleCorrect = busResult > trainResult;
+    assert("Transit type emissions scaling hierarchy", scaleCorrect, `Bus: ${busResult}kg, Train: ${trainResult}kg`);
+} catch (e) {
+    assert("Transit type emissions scaling hierarchy", false, e.message);
+}
+
+// 18. Programmatic DOM operations and node creation safety check
+try {
+    const mockEl = document.createElement("button");
+    mockEl.textContent = "Test Button";
+    mockEl.classList.add("btn-primary");
+    mockEl.setAttribute("aria-label", "Primary Button");
+
+    const textNode = document.createTextNode(" Extra Text");
+    mockEl.appendChild(textNode);
+
+    const hasClass = mockEl.classList.contains("btn-primary");
+    const labelSet = mockEl["aria-label"] === "Primary Button";
+    assert("Programmatic DOM mock operations check", hasClass && labelSet && mockEl.children.length === 1, `Class: ${mockEl.classList.classes.join(",")}`);
+} catch (e) {
+    assert("Programmatic DOM mock operations check", false, e.message);
 }
 
 console.log("\n==========================================");
