@@ -3,7 +3,7 @@
  * Implements a cache-first strategy for offline support.
  */
 
-const CACHE_NAME = 'ecoloop-v5';
+const CACHE_NAME = 'ecoloop-v6';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -14,7 +14,15 @@ const ASSETS_TO_CACHE = [
     '/game.js',
     '/settings.js',
     '/manifest.json',
-    '/cache-buster.js'
+    '/cache-buster.js',
+    '/js/dom.js',
+    '/js/state.js',
+    '/js/charts.js',
+    '/js/navigation.js',
+    '/js/calculator.js',
+    '/js/actions.js',
+    '/js/offsets.js',
+    '/js/diagnostics.js'
 ];
 
 // Install event - cache core assets
