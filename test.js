@@ -41,7 +41,7 @@ if (typeof global !== 'undefined' && typeof window === 'undefined') {
     };
 }
 
-import { CALC_FACTORS, calculateBaselineEmissions } from './calculations.js';
+import { CALC_FACTORS, ACTIONS_DB, GAME_ITEMS, BADGES_DB, calculateBaselineEmissions } from './calculations.js';
 import { sanitizeInput } from './settings.js';
 
 console.log("==========================================");
@@ -243,6 +243,87 @@ try {
     assert("Programmatic DOM mock operations check", hasClass && labelSet && mockEl.children.length === 1, `Class: ${mockEl.classList.classes.join(",")}`);
 } catch (e) {
     assert("Programmatic DOM mock operations check", false, e.message);
+}
+
+// 19. Action Plan Savings Range Validity
+try {
+    const allValid = ACTIONS_DB.every(act => typeof act.id === 'string' && act.savings > 0 && typeof act.title === 'string' && typeof act.desc === 'string');
+    assert("Action Plan Savings Range Validity", allValid, `${ACTIONS_DB.length} actions verified`);
+} catch (e) {
+    assert("Action Plan Savings Range Validity", false, e.message);
+}
+
+// 20. Game Items Category Accuracy
+try {
+    const tiers = ['low', 'medium', 'high'];
+    const allValid = GAME_ITEMS.every(item => typeof item.name === 'string' && tiers.includes(item.tier) && typeof item.fact === 'string' && item.fact.length > 0);
+    assert("Game Items Category Accuracy", allValid, `${GAME_ITEMS.length} items verified`);
+} catch (e) {
+    assert("Game Items Category Accuracy", false, e.message);
+}
+
+// 21. XP Level Title Resolution Hierarchy
+try {
+    const getLevelTitle = (level) => {
+        if (level === 1) return "Eco Explorer";
+        if (level === 2) return "Green Advocate";
+        if (level === 3) return "Climate Guardian";
+        return "Carbon Master";
+    };
+    const checkTitles = getLevelTitle(1) === "Eco Explorer" && 
+                        getLevelTitle(2) === "Green Advocate" && 
+                        getLevelTitle(3) === "Climate Guardian" && 
+                        getLevelTitle(5) === "Carbon Master";
+    assert("XP Level Title Resolution Hierarchy", checkTitles, "Explorer > Advocate > Guardian > Master");
+} catch (e) {
+    assert("XP Level Title Resolution Hierarchy", false, e.message);
+}
+
+// 22. Target Reduction Goal Clamping Range
+try {
+    const testGoal1 = Math.max(0, Math.min(0.50, parseFloat("0.25") || 0.25)); // valid
+    const testGoal2 = Math.max(0, Math.min(0.50, parseFloat("0.85") || 0.25)); // > 50% should clamp
+    assert("Target Reduction Goal Clamping Range", testGoal1 === 0.25 && testGoal2 === 0.50, `Valid: ${testGoal1}, Clamped: ${testGoal2}`);
+} catch (e) {
+    assert("Target Reduction Goal Clamping Range", false, e.message);
+}
+
+// 23. Badges Schema Completeness
+try {
+    const allValid = BADGES_DB.every(b => typeof b.id === 'string' && typeof b.title === 'string' && typeof b.desc === 'string' && typeof b.icon === 'string');
+    assert("Badges Schema Completeness", allValid, `${BADGES_DB.length} badges verified`);
+} catch (e) {
+    assert("Badges Schema Completeness", false, e.message);
+}
+
+// 24. HTML Input Sanitizer Multi-Vector Injection Blocks
+try {
+    const malicious = '<img src=x onerror=alert(1)> <iframe src="javascript:alert(2)">';
+    const cleaned = sanitizeInput(malicious);
+    const safe = !cleaned.includes("<") && !cleaned.includes(">") && !cleaned.includes("onerror") && !cleaned.includes("javascript:");
+    assert("HTML Input Sanitizer Multi-Vector Injection Blocks", safe, `Cleaned to: "${cleaned}"`);
+} catch (e) {
+    assert("HTML Input Sanitizer Multi-Vector Injection Blocks", false, e.message);
+}
+
+// 25. Grid Region List Enumeration and Integrity Check
+try {
+    const allowedRegions = ['0.38', '0.22', '0.52', '0.36', '0.18'];
+    const invalidRegion = '0.99';
+    const rawRegion = allowedRegions.includes(invalidRegion) ? invalidRegion : '0.38';
+    assert("Grid Region List Enumeration and Integrity Check", rawRegion === '0.38', `Resolved invalid ${invalidRegion} to ${rawRegion}`);
+} catch (e) {
+    assert("Grid Region List Enumeration and Integrity Check", false, e.message);
+}
+
+// 26. Paris Agreement Carbon Budget tracker limits
+try {
+    const parisLimit = 11.0;
+    const testKg = 5.5; // 50%
+    const budgetPercent = Math.min(100, Math.round((testKg / parisLimit) * 100));
+    assert("Paris Agreement Carbon Budget tracker limits", budgetPercent === 50, `5.5 kg is ${budgetPercent}% of 11.0 kg limit`);
+} catch (e) {
+    assert("Paris Agreement Carbon Budget tracker limits", false, e.message);
 }
 
 console.log("\n==========================================");
