@@ -79,6 +79,29 @@ let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 
 const US_AVERAGE_FOOTPRINT = 16.0; // National US average per capita in Tons CO2e/year
 
+/**
+ * Safely sets the content of a button using DOM APIs to avoid innerHTML security warnings.
+ * @param {HTMLElement} btn Target button element
+ * @param {string} text Button text
+ * @param {string} iconClass FontAwesome class list (e.g. "fa-solid fa-check")
+ * @param {boolean} iconAfter If true, place the icon after the text
+ */
+function setButtonWithIcon(btn, text, iconClass, iconAfter = false) {
+    if (!btn) return;
+    btn.innerHTML = "";
+    const icon = document.createElement("i");
+    icon.className = iconClass;
+    icon.setAttribute("aria-hidden", "true");
+    
+    if (iconAfter) {
+        btn.appendChild(document.createTextNode(text + " "));
+        btn.appendChild(icon);
+    } else {
+        btn.appendChild(icon);
+        btn.appendChild(document.createTextNode(" " + text));
+    }
+}
+
 // --- DOM References Cache ---
 const DOM = {
     navItems: null,
@@ -748,14 +771,14 @@ function initCoachSystem() {
             const geminiKey = getServiceKey('geminiKey');
             if (geminiKey) {
                 DOM.btnCoachAdvise.disabled = true;
-                DOM.btnCoachAdvise.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-emerald"></i> AI Thinking...';
+                setButtonWithIcon(DOM.btnCoachAdvise, "AI Thinking...", "fa-solid fa-spinner fa-spin text-emerald");
                 
                 const prompt = `You are EcoLoop Eco-Coach AI. The user's annual carbon footprint breakdown: Energy: ${baseline.energy}kg, Transport: ${baseline.transport}kg, Diet: ${baseline.diet}kg, Lifestyle: ${baseline.lifestyle}kg (Total: ${baseline.totalKg}kg CO₂e/year). The US average is 16,000 kg/year. Give one specific, actionable, encouraging tip in 2-3 sentences to help them reduce their biggest emission area. Be specific with numbers.`;
                 
                 const aiResponse = await callGeminiAPI(prompt);
                 
                 DOM.btnCoachAdvise.disabled = false;
-                DOM.btnCoachAdvise.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-emerald"></i> Optimize My Plan';
+                setButtonWithIcon(DOM.btnCoachAdvise, "Optimize My Plan", "fa-solid fa-wand-magic-sparkles text-emerald");
                 
                 if (aiResponse) {
                     if (DOM.coachMessage) DOM.coachMessage.textContent = `🤖 ${aiResponse}`;
@@ -828,9 +851,11 @@ function initAccessibilitySystem() {
             const isHigh = document.body.classList.contains("high-contrast");
             localStorage.setItem("ecoloop_contrast", isHigh ? "true" : "false");
             
-            DOM.btnToggleContrast.innerHTML = isHigh ? 
-                `<i class="fa-solid fa-eye-slash"></i> Standard Theme` : 
-                `<i class="fa-solid fa-eye"></i> High Contrast`;
+            if (isHigh) {
+                setButtonWithIcon(DOM.btnToggleContrast, "Standard Theme", "fa-solid fa-eye-slash");
+            } else {
+                setButtonWithIcon(DOM.btnToggleContrast, "High Contrast", "fa-solid fa-eye");
+            }
                 
             announceToScreenReader(`High contrast mode ${isHigh ? 'enabled' : 'disabled'}`);
         });
@@ -838,7 +863,7 @@ function initAccessibilitySystem() {
         const initialContrast = localStorage.getItem("ecoloop_contrast");
         if (initialContrast === "true") {
             document.body.classList.add("high-contrast");
-            DOM.btnToggleContrast.innerHTML = `<i class="fa-solid fa-eye-slash"></i> Standard Theme`;
+            setButtonWithIcon(DOM.btnToggleContrast, "Standard Theme", "fa-solid fa-eye-slash");
         }
     }
 
@@ -1018,7 +1043,7 @@ function initCalculatorWizard() {
                 prevBtn.removeAttribute("disabled");
 
                 if (currentStep === totalSteps) {
-                    nextBtn.innerHTML = `Calculate <i class="fa-solid fa-check" aria-hidden="true"></i>`;
+                    setButtonWithIcon(nextBtn, "Calculate", "fa-solid fa-check", true);
                 }
                 
                 announceToScreenReader(`Calculator step ${currentStep} of ${totalSteps}.`);
@@ -1041,7 +1066,7 @@ function initCalculatorWizard() {
                 document.querySelector(`.step-indicator[data-step='${currentStep}']`).classList.remove("completed");
 
                 progressFill.style.width = `${((currentStep) / totalSteps) * 100}%`;
-                nextBtn.innerHTML = `Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>`;
+                setButtonWithIcon(nextBtn, "Next", "fa-solid fa-arrow-right", true);
 
                 if (currentStep === 1) {
                     prevBtn.classList.add("disabled");
@@ -1076,9 +1101,9 @@ function initCalculatorWizard() {
                     }
 
                     if (currentStep === totalSteps) {
-                        nextBtn.innerHTML = `Calculate <i class="fa-solid fa-check" aria-hidden="true"></i>`;
+                        setButtonWithIcon(nextBtn, "Calculate", "fa-solid fa-check", true);
                     } else {
-                        nextBtn.innerHTML = `Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>`;
+                        setButtonWithIcon(nextBtn, "Next", "fa-solid fa-arrow-right", true);
                     }
                 }
             });
@@ -1178,7 +1203,11 @@ function renderRecentLogs() {
     if (!DOM.logList) return;
 
     if (state.userProfile.recentLogs.length === 0) {
-        DOM.logList.innerHTML = `<li class="empty-state-text">No actions logged today yet.</li>`;
+        DOM.logList.innerHTML = "";
+        const emptyLi = document.createElement("li");
+        emptyLi.className = "empty-state-text";
+        emptyLi.textContent = "No actions logged today yet.";
+        DOM.logList.appendChild(emptyLi);
         return;
     }
 
@@ -1412,7 +1441,10 @@ function updateRankDisplay() {
 
     if (DOM.rankTitle) DOM.rankTitle.textContent = title;
     if (DOM.rankIconWrapper) {
-        DOM.rankIconWrapper.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+        DOM.rankIconWrapper.innerHTML = "";
+        const iconEl = document.createElement("i");
+        iconEl.className = `fa-solid ${icon}`;
+        DOM.rankIconWrapper.appendChild(iconEl);
     }
 
     const nextThreshold = level * 120;
@@ -1903,8 +1935,15 @@ function renderGoogleMap(container) {
                 }
             });
 
+            const contentDiv = document.createElement("div");
+            contentDiv.style.color = "#000";
+            contentDiv.style.fontSize = "12px";
+            contentDiv.style.fontWeight = "600";
+            contentDiv.style.padding = "2px";
+            contentDiv.textContent = proj.name;
+
             const infoWindow = new google.maps.InfoWindow({
-                content: `<div style="color:#000; font-size:12px; font-weight:600; padding:2px;">${proj.name}</div>`
+                content: contentDiv
             });
 
             marker.addListener("click", () => {

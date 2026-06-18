@@ -92,9 +92,13 @@ export function calculateBaselineEmissions(d) {
     };
 
     // 1. Home Grid Region & Clean Mix offset
-    const regionIntensity = safeFloat(d.regionVal, CALC_FACTORS.electricityCo2PerKwh);
+    const allowedRegions = ['0.38', '0.22', '0.52', '0.36', '0.18'];
+    const rawRegion = d.regionVal !== null && d.regionVal !== undefined ? String(d.regionVal) : '0.38';
+    const validRegionVal = allowedRegions.includes(rawRegion) ? rawRegion : '0.38';
+    const regionIntensity = safeFloat(validRegionVal, CALC_FACTORS.electricityCo2PerKwh);
+    
     const electricity = safeFloat(d.electricity, 0);
-    const cleanMix = safeFloat(d.cleanMix, 0);
+    const cleanMix = Math.max(0, Math.min(1.0, safeFloat(d.cleanMix, 0)));
     const gas = safeFloat(d.gas, 0);
 
     const electricCo2 = electricity * CALC_FACTORS.electricityPerDollar * regionIntensity * (1 - cleanMix);

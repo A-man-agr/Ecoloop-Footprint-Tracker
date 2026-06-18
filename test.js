@@ -1,4 +1,5 @@
 import { CALC_FACTORS, calculateBaselineEmissions } from './calculations.js';
+import { sanitizeInput } from './settings.js';
 
 console.log("==========================================");
 console.log("🏃 Running EcoLoop System Unit Tests...");
@@ -93,6 +94,72 @@ try {
     assert("Defensive Parameter Parsing & Type Resilience", typeof baseline.totalKg === 'number' && !isNaN(baseline.totalKg), `Parsed to: ${baseline.totalKg} kg`);
 } catch (e) {
     assert("Defensive Parameter Parsing & Type Resilience", false, e.message);
+}
+
+// 9. Invalid carType fallback to default gasoline vehicle emissions factor
+try {
+    const testData = { carMiles: 150, carType: 'rocket' };
+    const resultDefault = calculateBaselineEmissions(testData).transport;
+    const resultGas = calculateBaselineEmissions({ carMiles: 150, carType: 'gas' }).transport;
+    assert("Invalid carType Fallback to Gasoline", resultDefault === resultGas, `${resultDefault} kg`);
+} catch (e) {
+    assert("Invalid carType Fallback to Gasoline", false, e.message);
+}
+
+// 10. Shopping Habits low vs high carbon range limits
+try {
+    const baselineLow = calculateBaselineEmissions({ shopping: 'low', recycle: false }).lifestyle;
+    const baselineHigh = calculateBaselineEmissions({ shopping: 'high', recycle: false }).lifestyle;
+    assert("Shopping Habit Range Bound Hierarchy", baselineHigh > baselineLow, `Low: ${baselineLow}kg, High: ${baselineHigh}kg`);
+} catch (e) {
+    assert("Shopping Habit Range Bound Hierarchy", false, e.message);
+}
+
+// 11. Food Waste linear scale calculations
+try {
+    const baselineZeroWaste = calculateBaselineEmissions({ foodWaste: 0 }).diet;
+    const baselineMaxWaste = calculateBaselineEmissions({ foodWaste: 50 }).diet;
+    assert("Food Waste Emission Scale", baselineMaxWaste > baselineZeroWaste, `0% waste: ${baselineZeroWaste}kg, 50% waste: ${baselineMaxWaste}kg`);
+} catch (e) {
+    assert("Food Waste Emission Scale", false, e.message);
+}
+
+// 12. Baseline calculations with zero inputs
+try {
+    const testData = { electricity: 0, cleanMix: 0, regionVal: '0.38', gas: 0, carMiles: 0, carType: 'gas', flights: 0, transit: 0, groceryBeef: 0, groceryPoultry: 0, groceryDairy: 0, groceryVeggies: 0, foodWaste: 0, shopping: 'low', recycle: true, dietType: 'vegan' };
+    const baseline = calculateBaselineEmissions(testData);
+    assert("Calculations with Complete Zero Inputs", baseline.totalKg === 0, `${baseline.totalKg} kg`);
+} catch (e) {
+    assert("Calculations with Complete Zero Inputs", false, e.message);
+}
+
+// 13. Invalid regionVal fallback to standard national average intensity
+try {
+    const testDataInvalid = { electricity: 100, regionVal: '0.99' };
+    const testDataDefault = { electricity: 100, regionVal: '0.38' };
+    const resultInvalid = calculateBaselineEmissions(testDataInvalid).energy;
+    const resultDefault = calculateBaselineEmissions(testDataDefault).energy;
+    assert("Invalid regionVal Fallback to Default Grid", resultInvalid === resultDefault, `${resultInvalid} kg`);
+} catch (e) {
+    assert("Invalid regionVal Fallback to Default Grid", false, e.message);
+}
+
+// 14. HTML Input Sanitizer XSS Prevention checks
+try {
+    const malicious = '<script>alert("XSS")</script>';
+    const cleaned = sanitizeInput(malicious);
+    assert("HTML Input Sanitizer XSS Prevention", !cleaned.includes("<") && !cleaned.includes(">"), `Cleaned to: "${cleaned}"`);
+} catch (e) {
+    assert("HTML Input Sanitizer XSS Prevention", false, e.message);
+}
+
+// 15. Clean energy mix out-of-bounds capping safety
+try {
+    const testDataOOB = { electricity: 100, cleanMix: 1.5 }; // > 100%
+    const resultOOB = calculateBaselineEmissions(testDataOOB).energy;
+    assert("Clean Energy mix bounds capping", resultOOB >= 0, `Output: ${resultOOB} kg`);
+} catch (e) {
+    assert("Clean Energy mix bounds capping", false, e.message);
 }
 
 console.log("\n==========================================");
