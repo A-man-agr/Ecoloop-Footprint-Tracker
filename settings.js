@@ -215,6 +215,7 @@ export function initSettingsPanel() {
     const openBtn = document.getElementById('btn-open-settings');
     const modal = document.getElementById('settings-modal');
     const closeBtn = document.getElementById('btn-close-settings');
+    const cancelBtn = document.getElementById('btn-cancel-settings');
     const saveBtn = document.getElementById('btn-save-settings');
 
     if (!openBtn || !modal) return;
@@ -239,6 +240,14 @@ export function initSettingsPanel() {
 
     const closeModal = () => modal.classList.remove('active');
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+    // Click outside modal content container area to close it (improves responsiveness/UX)
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
 
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
