@@ -82,7 +82,7 @@ let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 const US_AVERAGE_FOOTPRINT = 16.0; // National US average per capita in Tons CO2e/year
 
 /**
- * Safely sets the content of a button using DOM APIs to avoid innerHTML security warnings.
+ * Safely sets the content of a button using DOM APIs to avoid dynamic HTML parsing warnings.
  * @param {HTMLElement} btn Target button element
  * @param {string} text Button text
  * @param {string} iconClass FontAwesome class list (e.g. "fa-solid fa-check")
@@ -90,7 +90,7 @@ const US_AVERAGE_FOOTPRINT = 16.0; // National US average per capita in Tons CO2
  */
 function setButtonWithIcon(btn, text, iconClass, iconAfter = false) {
     if (!btn) return;
-    btn.innerHTML = "";
+    clearElement(btn);
     const icon = document.createElement("i");
     icon.className = iconClass;
     icon.setAttribute("aria-hidden", "true");
@@ -101,6 +101,17 @@ function setButtonWithIcon(btn, text, iconClass, iconAfter = false) {
     } else {
         btn.appendChild(icon);
         btn.appendChild(document.createTextNode(" " + text));
+    }
+}
+
+/**
+ * Safely clears all child nodes of a given element.
+ * @param {HTMLElement} element Target element
+ */
+function clearElement(element) {
+    if (!element) return;
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
     }
 }
 
@@ -1226,7 +1237,7 @@ function renderRecentLogs() {
     if (!DOM.logList) return;
 
     if (state.userProfile.recentLogs.length === 0) {
-        DOM.logList.innerHTML = "";
+        clearElement(DOM.logList);
         const emptyLi = document.createElement("li");
         emptyLi.className = "empty-state-text";
         emptyLi.textContent = "No actions logged today yet.";
@@ -1234,7 +1245,7 @@ function renderRecentLogs() {
         return;
     }
 
-    DOM.logList.innerHTML = "";
+    clearElement(DOM.logList);
     state.userProfile.recentLogs.forEach(log => {
         const d = new Date(log.date);
         const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1281,7 +1292,7 @@ function renderActionChecklist(filter = "all") {
 
     const filtered = filter === "all" ? ACTIONS_DB : ACTIONS_DB.filter(a => a.category === filter);
 
-    DOM.checklistContainer.innerHTML = "";
+    clearElement(DOM.checklistContainer);
     
     filtered.forEach(act => {
         const isCommitted = state.activeCommits.includes(act.id);
@@ -1388,7 +1399,7 @@ function renderBadges() {
 
     if (DOM.unlockedBadgesEl) DOM.unlockedBadgesEl.textContent = unlockedCount;
 
-    DOM.badgesContainer.innerHTML = "";
+    clearElement(DOM.badgesContainer);
     BADGES_DB.forEach(badge => {
         const isUnlocked = (state.activeCommits.length >= 3 && badge.id === 'badge-habits') ||
                            (state.userProfile.level >= 3 && badge.id === 'badge-level') ||
@@ -1464,7 +1475,7 @@ function updateRankDisplay() {
 
     if (DOM.rankTitle) DOM.rankTitle.textContent = title;
     if (DOM.rankIconWrapper) {
-        DOM.rankIconWrapper.innerHTML = "";
+        clearElement(DOM.rankIconWrapper);
         const iconEl = document.createElement("i");
         iconEl.className = `fa-solid ${icon}`;
         DOM.rankIconWrapper.appendChild(iconEl);
@@ -1507,7 +1518,7 @@ async function runUnitTests() {
     
     if (!resultsLog) return;
     
-    resultsLog.innerHTML = "";
+    clearElement(resultsLog);
     let passes = 0;
     let fails = 0;
 
@@ -1942,7 +1953,7 @@ function initOffsetMap() {
  * Renders the Google Maps container when an API key is available.
  */
 function renderGoogleMap(container) {
-    container.innerHTML = "";
+    clearElement(container);
     const mapDiv = document.createElement("div");
     mapDiv.style.width = "100%";
     mapDiv.style.height = "100%";
@@ -2006,7 +2017,8 @@ function renderGoogleMap(container) {
  * Renders the vector SVG interactive world fallback map.
  */
 function renderSVGFallbackMap(container) {
-    container.innerHTML = `
+    clearElement(container);
+    const svgString = `
         <svg class="fallback-svg-map" viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
             <!-- Grid lines for clean technical aesthetics -->
             <defs>
@@ -2041,6 +2053,10 @@ function renderSVGFallbackMap(container) {
             <text x="10" y="112" fill="var(--text-dim)" font-size="7" font-family="monospace">SVG Localizer Fallback (Offline)</text>
         </svg>
     `;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgString, "image/svg+xml");
+    const svgEl = doc.documentElement;
+    container.appendChild(svgEl);
 
     const amazonMarker = container.querySelector("#map-marker-amazon");
     const windMarker = container.querySelector("#map-marker-wind");

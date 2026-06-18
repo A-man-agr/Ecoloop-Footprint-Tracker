@@ -125,8 +125,13 @@ export const EcoGlobe = {
             this.animate();
         } catch (err) {
             console.error("Error setting up 3D Globe WebGL:", err);
-            // Fallback display
-            container.innerHTML = `<div class="badge-icon-large text-emerald"><i class="fa-solid fa-seedling"></i></div>`;
+            while (container.firstChild) { container.removeChild(container.firstChild); }
+            const badgeDiv = document.createElement("div");
+            badgeDiv.className = "badge-icon-large text-emerald";
+            const seedlingIcon = document.createElement("i");
+            seedlingIcon.className = "fa-solid fa-seedling";
+            badgeDiv.appendChild(seedlingIcon);
+            container.appendChild(badgeDiv);
         }
     },
 

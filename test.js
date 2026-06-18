@@ -25,8 +25,7 @@ if (typeof global !== 'undefined' && typeof window === 'undefined') {
                 children: [],
                 setAttribute: (name, val) => { element[name] = val; },
                 removeAttribute: (name) => { delete element[name]; },
-                textContent: "",
-                innerHTML: ""
+                textContent: ""
             };
             return element;
         },

@@ -330,7 +330,9 @@ function updateLeaderboard(score) {
 export function renderLeaderboard(customList = null) {
     if (!gameDOM.leaderboardList) return;
 
-    gameDOM.leaderboardList.innerHTML = "";
+    while (gameDOM.leaderboardList.firstChild) {
+        gameDOM.leaderboardList.removeChild(gameDOM.leaderboardList.firstChild);
+    }
     
     const listToRender = customList || gameState.userProfile.highScores;
 
